@@ -14,43 +14,49 @@ import { reduxForm, Field } from 'redux-form'
 import Input from '../../Public/Component/Form/TextInput'
 import Textarea from "../../Public/Component/Form/Textarea"
 
-const createFormData = (photo, body) => {
+ const createFormData = (photo) => {
   const data = new FormData();
+  data.append(photo);
 
-  data.append({image : {
-          name : slugify(body.slug),
-          type : photo.type,
-          extension : photo.fileName.split('.').pop(),
-          uri : Platform.OS === "android" ? photo.uri : photo.uri.replace("file://", ""),
-          
-      }
-    
-  });
-
-  data.append({detail : body})
   return data;
 };
 
 
  class AddPost extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-        token : this.props.auth.token[0]['token']
-    };
-  }
 
+ constructor(){
+   super()
+   this.state = {
+     photo : null
+   }
+   this.handleUpload = this.handleUpload.bind(this)
+ }
   
-  handleChoosePhoto = () => {
-    const options = {
-      noData: true,
+ handleChoosePhoto = () => {
+  const options = {
+    noData: true,
+  }
+  ImagePicker.launchImageLibrary(options, response => {
+    if (response.uri) {
+      this.setState({ photo: response })
     }
-    ImagePicker.launchImageLibrary(options, response => {
-      if (response.uri) {
-        this.setState({ photo: response })
-      }
-    })
-  } 
+  })
+}
+
+  // handleUpload(){
+  //   const data = this.state.photo
+  //   axios.post("http://192.168.0.62:3333/postfile", {data}
+  //   )
+  //     .then(response => {
+  //       console.warn("upload succes", response);
+  //       alert("Upload success!");
+  //       this.setState({ photo: null });
+  //     })
+  //     .catch(error => {
+  //       console.warn("upload error", error);
+  //       alert("Upload failed!");
+  //     });
+  // }
 
   handleSave = (data) => {
     const token = this.props.auth.token[0]['token']
@@ -84,8 +90,16 @@ const createFormData = (photo, body) => {
             <Text> Add New Post</Text>
             
           </Body>
-          <Right>
-            
+          <Right>        
+              <TouchableOpacity
+                  onPress={
+                    this.props.handleSubmit(this.handleSave)
+                  }
+              >
+                  <View>
+                      <Icon name="md-checkmark-circle-outline" />
+                  </View>
+              </TouchableOpacity>
           </Right>
          </Header>
           <Content>
@@ -105,13 +119,7 @@ const createFormData = (photo, body) => {
                 placeholder="Deskripsi Berita"
                 style={{width: '100%', height : 300, borderWidth : 0.2}}
               />
-              <View style={{ justifyContent : 'center', alignItems:'center' }}>
-                <Button
-                  onPress ={
-                    this.props.handleSubmit(this.handleSave)
-                  }
-                ><Text>Save</Text></Button>
-              </View>
+             
             </Card>
                 {/* {photo && (
                     <Fragment>

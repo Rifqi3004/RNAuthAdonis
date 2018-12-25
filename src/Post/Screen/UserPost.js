@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux'
-import {getUserPost} from '../../Public/Redux/Actions/Post'
+import {getUserPost, deletePost} from '../../Public/Redux/Actions/Post'
 import axios from 'axios'
 
-import { View, Text, FlatList,ListView, TouchableOpacity, StyleSheet, BackHandler} from 'react-native';
+import { View, Text, FlatList,ListView, TouchableOpacity, StyleSheet, BackHandler, Alert} from 'react-native';
 
 import {Spinner, Container, Content, List, Button, Icon, 
     Header,Left, Right, Body, Footer } from 'native-base';
@@ -22,7 +22,7 @@ import { NavigationActions } from "react-navigation";
   }
 
   componentDidMount(){   
-    this.props.dispatch(getUserPost(this.state.iduser));
+    this.props.dispatch(getUserPost(this.props.auth.user[0]['id']));
     BackHandler.addEventListener("hardwareBackPress", this.onBackPress);
   }
   deleteRow = (secId, rowId, rowMap) => {
@@ -42,6 +42,24 @@ import { NavigationActions } from "react-navigation";
     dispatch(NavigationActions.back());
     return true;
   };
+
+  deleteAction(id){
+    const data = {
+      id : id
+    }
+    Alert.alert(
+      'Delete this Post?',
+      null,
+      [
+        {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'OK', onPress: () => this.props.dispatch(deletePost(data,this.props.auth.token[0]['token']))
+        .then( () => alert('delete success') )    
+        },
+      ],
+      { cancelable: false }
+    )
+  }
 
   handeClick = (screen) => {
       this.props.dispatch({
@@ -91,8 +109,8 @@ import { NavigationActions } from "react-navigation";
               renderRightHiddenRow={(data, secId, rowId, rowMap) =>
                 <Button full danger
                   style={{ backgroundColor : '#f0f0f0' }}
-                  onPress={_ => {
-                      alert('oke');
+                  onPress={ data_ => {
+                      this.deleteAction(data.id);
                       this.deleteRow(secId, rowId, rowMap)
                 }}>
                     <Icon name="trash" active style={{ color: '#ef4747' }}/>
@@ -135,7 +153,7 @@ import { NavigationActions } from "react-navigation";
                 () => this.handeClick('AddPost')
                 }
             >
-                <Icon name="ios-add-circle-outline" style={styles.IconHeader} />
+                <Icon name="ios-create-outline" style={styles.IconHeader} />
             </TouchableOpacity>
           </Right>
         </Footer>

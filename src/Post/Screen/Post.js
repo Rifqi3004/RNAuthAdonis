@@ -4,12 +4,7 @@ import {getPosts} from "../../Public/Redux/Actions/Post"
 
 import { View, Text, FlatList } from 'react-native';
 import { Container } from 'native-base'
-import Config from 'react-native-config'
-
 import ListPost from "../Component/ListPost"
-
-const HOST_SERVER = "http://192.168.0.62:3333/file/"
-
 class Post extends Component {
   constructor(props) {
     super(props);

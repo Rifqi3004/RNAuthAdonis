@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux'
+import {reduxForm, Field, initialize} from 'redux-form'
+import TextInput from "../../Public/Component/Form/TextInput"
+import Textarea from "../../Public/Component/Form/Textarea"
+
 import {editPost} from "../../Public/Redux/Actions/Post"
 import Config from "react-native-config"
 
 import { View, Text, TouchableOpacity, StyleSheet, Image, BackHandler, Alert } from 'react-native';
-import { Container, Header, Left, Body, Right, Icon, Content, Input, Textarea } from 'native-base';
+import { Container, Header, Left, Body, Right, Icon, Content} from 'native-base';
 import { NavigationActions } from "react-navigation";
 
 class DetailPost extends Component {
@@ -22,6 +26,12 @@ class DetailPost extends Component {
 
   componentDidMount() {
     BackHandler.addEventListener("hardwareBackPress", this.onBackPress);
+    const {data} = this.props.navigation.state.params
+    this.props.initialize({
+        id : data.id,
+        slug : data.slug,
+        description : data.description
+    })
     
   }
 
@@ -54,26 +64,13 @@ class DetailPost extends Component {
   }
 
 
-  handleSave =() => {
-    const data = {
-        id : this.state.id,
-        slug : this.state.slug,
-        description : this.state.description
-    }
-    if(this.state.slug == "" | this.state.description == ""){
-        alert('Field ada yang kosng')
-    }else{
-       this.props.dispatch(editPost(data,this.state.token))
-        .then(()=> alert('sukses'))
-        .then((res) => console.log(res))
-    }
-    
-    // (this.state.slug == "" || this.state.description == "")?
-    //     alert('Field ada yang kosong') :   
-    //     alert(JSON.stringify(data))
-    // // this.props.dispatch(addPost(data,this.state.token))
-    // // .then(()=> alert('sukses'))
-    // // .then(() => this.handleBack())
+  handleSave =(value) => {       
+    this.props.dispatch(editPost(value,this.state.token))
+    .then((res)=>
+        this.props.navigation.navigate('DetailPost',{data : res.value.data})
+    )
+    .then(() => alert('sukses'))   
+
 
   }
 
@@ -103,7 +100,7 @@ class DetailPost extends Component {
                     (this.props.auth.token.length >0)?
                         <TouchableOpacity
                             onPress={
-                                () => this.handleSave()
+                               this.props.handleSubmit(this.handleSave)
                             }
                         >
                             <View>
@@ -119,23 +116,17 @@ class DetailPost extends Component {
                 <Image style={styles.imagePost} source={{ uri : Config.HOST_SERVER+'file/'+this.state.image }}/>
             </View>
             <View>
-                <Input 
-                    onChangeText ={
-                        (text) => this.setState({
-                            slug : text
-                        })
-                    }
-                    value={this.state.slug}
-                />
-                <Textarea 
-                    onChangeText ={
-                        (text) => this.setState({
-                            description : text
-                        })
-                    }
-                    value={this.state.description}
-                />
-               
+                <Field 
+                name="slug"
+                component={TextInput}
+                placeholder="Judul Berita"
+              />
+               <Field 
+                name="description"
+                component={Textarea}
+                placeholder="Deskripsi Berita"
+                style={{width: '100%', height : 300, borderWidth : 0.2}}
+              />
             </View>
                 
 
@@ -149,7 +140,9 @@ const mapStateToProps = (state) => ({
     auth : state.auth,
     nav : state.nav
 })
-export default connect(mapStateToProps)(DetailPost)
+export default reduxForm({
+    form : 'editPost',
+})(connect(mapStateToProps)(DetailPost))
 
 const styles= StyleSheet.create({
     imagePost : {

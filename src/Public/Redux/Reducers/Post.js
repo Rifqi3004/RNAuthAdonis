@@ -96,6 +96,31 @@ export default Post = (state = initialState, action) => {
 
             }
 
+        //delete post
+        case "DELETE_POST_PENDING" : 
+        return {
+          ...state, isLoading : true
+        }
+
+        case "DELETE_POST_FULFILLED" : 
+            return {
+            ...state, isLoading : false, isFinish : true,
+            allPost : state.allPost.filter(data => data.id != action.payload.data),
+            userPost : state.userPost.filter(data => data.id != action.payload.data)
+        }
+
+        case "DELETE_POST_REJECTED" : 
+            return {
+            ...state, isError : true,
+            error : action.payload.data
+
+            }
+        case "LOGOUT" : 
+            return {
+                ...state,
+                userPost : []
+            }
+
         default:
            return state
     }
